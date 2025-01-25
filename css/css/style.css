@@ -1,0 +1,122 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+body{
+    height: 100svh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #010409;
+    color: white;
+}
+.wrapper{
+    display: flex;
+    gap: 10px;
+}
+.windows{
+    width: 100vw;
+    height: 100svh;
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.539);
+    z-index: 100;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    transform: scale(0);
+    opacity: 0;
+    transition: .3s ease;
+}
+.windows.show{
+    transition-delay: 2s;
+    opacity: 1;
+    transform: scale(1);
+    display: flex;
+}
+
+.window{
+    padding: 20px;
+    background-color: #0d11177c;
+    backdrop-filter: blur(5px);
+    min-width: 300px;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+.window .content{
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-size: 30px;
+    font-weight: 600;
+}
+.window .btn-wrapper{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.window .cell {
+    width: 80px;
+    height: 80px;
+    background-color: transparent;
+}
+button:hover{
+    filter: brightness(140%);
+}
+button{
+    transition: .3s ease;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: none;
+    font-weight: 600;
+    font-size: 18px;
+    border-radius: 3px;
+    background-color: royalblue;
+    color: white;
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 1px;
+    aspect-ratio: 1;
+    width: 300px;
+}
+
+.cell.x.active{
+    background-color: #30427d;
+}
+.cell.o.active{
+    background-color: #7d3030;
+}
+.cell:hover{
+    filter: brightness(120%);
+}
+.cell{
+    transition: .3s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(16, 22, 41);
+    color: white;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 80%;
+}
+.cell.o{
+    background-image: url(/assets/circle.svg);
+}
+.cell.x{
+    background-image: url(/assets/cross.svg);
+}
