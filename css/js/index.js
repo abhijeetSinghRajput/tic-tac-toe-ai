@@ -1,13 +1,24 @@
 const guiCells = [...document.querySelectorAll('#board .cell')];
 const guiPositionKey = document.querySelector('.poskey');
-const windows = document.querySelector('.windows');
+const gameOverWindow = document.querySelector('#game-over');
+const guiWinner = document.querySelector('#winner');
+const guiTurn = document.querySelector('#turn');
 
-function showWindow(winner){
-    windows.classList.add('show');
-    windows.querySelector('.winner').className = `winner cell ${winner}`;
+function showWindow(data){
+    const para = gameOverWindow.querySelector('p');
+    
+    if(data.draw){
+        para.textContent = "Match Draw";
+        gameOverWindow.className = 'show draw';
+        return;
+    }
+
+    gameOverWindow.className = `show ${data.winner}`;
+    guiWinner.className = `cell ${data.winner}`;
+    para.textContent = `Wins the match`;
 }
 function closeWindow(){
-    windows.classList.remove('show');
+    gameOverWindow.classList.remove('show', 'o', 'x', 'draw');
 }
 
 let side = 1;
@@ -22,9 +33,11 @@ function newGame() {
     winner = 0;
     positionKey = 0;
     guiPositionKey.textContent = positionKey.toString(16);
+    guiTurn.className = "cell x";
     closeWindow();
+    transpositionTable = {};
 }
-
+const transpositionTable = {};
 const zobristKeys = [
     [0x1a2b3c4d, 0x9a8b7c6d],
     [0x2b3c4d5e, 0x8b7c6d5e],
@@ -39,20 +52,24 @@ const zobristKeys = [
 
 guiCells.forEach((cell, i) => {
     cell.addEventListener('click', () => {
-        if(isDraw()){
-            return showWindow("Match Draw");
-        }
-        if(winner) return;
         
+        if(winner) return;
+
         if (isEmpty(i)) {
             cell.classList.add(side === 1 ? 'x' : 'o');
+            
             makeMove(i);
             winner = isWin();
-            guiPositionKey.textContent = positionKey.toString(16);
             if (winner) {
                 drawWinLine()
-                return showWindow(winner === 1 ? 'x' : 'o');
+                return showWindow({draw: false, winner: winner === 1 ? 'x' : 'o'});
             }
+            if(isDraw()){
+                return showWindow({draw: true, winner: false});
+            }
+
+            guiPositionKey.textContent = positionKey.toString(16);
+            guiTurn.className = "cell "  + (side === 1? 'x' : 'o');
         }
     });
 })
@@ -93,21 +110,31 @@ function drawWinLine(){
 }
 
 function negaMax(depth) {
+    let winner = isWin();
+    if (winner) {
+        // X wins, return positive score
+        // O wins, return negative
+        return (winner === 1 ? 10 - depth:  depth - 10); 
+    }
+
+    //memoization
+    if(positionKey in transpositionTable){
+        return transpositionTable[positionKey];
+    }
+
     if (isDraw()) return 0;
-    let score = isWin();
-    if (score == 1) return 10 - depth;
-    if (score == -1) return depth - 10;
 
     let bestScore = -Infinity;
     for (let i = 0; i < 9; ++i) {
         if (!isEmpty(i)) continue;
 
         makeMove(i);
-        score = -negaMax(depth + 1);
+        let score = -negaMax(depth + 1);
         undoMove(i);
         
         bestScore = Math.max(bestScore, score);
     }
+    transpositionTable[positionKey] = bestScore;
     return bestScore;
 }
 
@@ -120,7 +147,7 @@ function getBestMove(){
         makeMove(i);
         let score = negaMax(0);
         undoMove(i);
-
+        console.log(i, score);
         if(score > bestScore){
             bestScore = score;
             bestMove = i;
@@ -131,8 +158,8 @@ function getBestMove(){
 
 function isWin() {
     for (const mask of bitMasks) {
-        if ((bitBoard[0] & mask) === mask) return -1;
-        if ((bitBoard[1] & mask) === mask) return 1;
+        if ((bitBoard[0] & mask) === mask) return -1;   // Player 'O' wins
+        if ((bitBoard[1] & mask) === mask) return 1;    // Player 'X' wins
     }
     return 0;
 }
@@ -149,8 +176,8 @@ function makeMove(index) {
     hashKey(index);
 }
 function undoMove(index) {
-    bitBoard[side] &= ~(1 << index);
     side ^= 1;
+    bitBoard[side] &= ~(1 << index);
     hashKey(index);
 }
 
@@ -175,3 +202,14 @@ function printBitBoard(bitBoard) {
     }
     console.log('\n');
 }
+
+
+
+
+// X _ O
+// _ _ _
+// _ _ X
+// turn = O
+
+// expected bestMove = 4
+// output 1 
