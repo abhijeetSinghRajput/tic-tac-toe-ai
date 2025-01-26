@@ -25,6 +25,7 @@ let side = 1;
 let bitBoard = [0, 0]
 let winner = 0;
 let positionKey = 0;
+let transpositionTable = {};
 
 function newGame() {
     guiCells.forEach(cell => cell.className = "cell");
@@ -37,7 +38,6 @@ function newGame() {
     closeWindow();
     transpositionTable = {};
 }
-const transpositionTable = {};
 const zobristKeys = [
     [0x1a2b3c4d, 0x9a8b7c6d],
     [0x2b3c4d5e, 0x8b7c6d5e],
